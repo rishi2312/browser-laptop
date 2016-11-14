@@ -446,10 +446,15 @@ const handleAppAction = (action) => {
           appState = appState.set('sites', siteUtil.addSite(appState.get('sites'), s, action.tag))
         })
       } else {
-        appState = appState.set('sites', siteUtil.addSite(appState.get('sites'), action.siteDetail, action.tag, action.originalSiteDetail))
+        let sites = appState.get('sites')
+        if (!action.siteDetail.get('folderId') && siteUtil.isFolder(action.siteDetail)) {
+          action.siteDetail = action.siteDetail.set('folderId', siteUtil.getNextFolderId(sites))
+        }
+        appState = appState.set('sites', siteUtil.addSite(sites, action.siteDetail, action.tag))
       }
       if (action.destinationDetail) {
-        appState = appState.set('sites', siteUtil.moveSite(appState.get('sites'), action.siteDetail, action.destinationDetail, false, false, true))
+        appState = appState.set('sites', siteUtil.moveSite(appState.get('sites'),
+          action.siteDetail, action.destinationDetail, false, false, true))
       }
       // If there was an item added then clear out the old history entries
       if (oldSiteSize !== appState.get('sites').size) {
@@ -459,13 +464,17 @@ const handleAppAction = (action) => {
       appState = aboutHistoryState.setHistory(appState, action)
       break
     case AppConstants.APP_REMOVE_SITE:
-      appState = appState.set('sites', siteUtil.removeSite(appState.get('sites'), action.siteDetail, action.tag))
+      appState = appState.set('sites', siteUtil.removeSite(appState.get('sites'), action.siteDetail, action.tag, true))
       appState = aboutNewTabState.setSites(appState, action)
       appState = aboutHistoryState.setHistory(appState, action)
       break
     case AppConstants.APP_MOVE_SITE:
-      appState = appState.set('sites', siteUtil.moveSite(appState.get('sites'), action.sourceDetail, action.destinationDetail, action.prepend, action.destinationIsParent, false))
-      break
+      {
+        appState = appState.set('sites', siteUtil.moveSite(appState.get('sites'),
+          action.sourceDetail, action.destinationDetail, action.prepend,
+          action.destinationIsParent, false))
+        break
+      }
     case AppConstants.APP_MERGE_DOWNLOAD_DETAIL:
       if (action.downloadDetail) {
         appState = appState.mergeIn(['downloads', action.downloadId], action.downloadDetail)
