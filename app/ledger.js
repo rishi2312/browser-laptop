@@ -153,6 +153,10 @@ const doAction = (action) => {
           updatePublisherInfo()
           break
 
+        case settings.MINIMUM_PERCENTAGE:
+          updatePublisherInfo()
+          break
+
         default:
           break
       }
@@ -700,7 +704,7 @@ var updatePublisherInfo = () => {
 }
 
 var synopsisNormalizer = () => {
-  var i, duration, n, pct, publisher, results, total
+  var i, duration, minP, n, pct, publisher, results, total
   var data = []
   var scorekeeper = synopsis.options.scorekeeper
 
@@ -767,16 +771,15 @@ var synopsisNormalizer = () => {
                      .value()
   }
 
+  minP = getSetting(settings.MINIMUM_PERCENTAGE)
   pct = foo(pct, 100)
   total = 0
   for (i = 0; i < n; i++) {
-/*
-    if (pct[i] <= 0) {
+    if (pct[i] < 0) pct[i] = 0
+    if ((minP) && (pct[i] < 1)) {
       data = data.slice(0, i)
       break
     }
- */
-    if (pct[i] < 0) pct[i] = 0
 
     data[i].percentage = pct[i]
     total += pct[i]
