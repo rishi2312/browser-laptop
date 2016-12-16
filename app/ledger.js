@@ -422,7 +422,7 @@ eventStore.addChangeListener(() => {
 
 // NB: in theory we have already seen every element in info except for (perhaps) the last one...
   underscore.rest(info, info.length - 1).forEach((page) => {
-    var entry, faviconURL, publisher, siteSetting
+    var entry, faviconURL, pattern, publisher, siteSetting
     var location = page.url
 
     if ((location.match(/^about/)) || ((locations[location]) && (locations[location].publisher))) return
@@ -443,6 +443,10 @@ eventStore.addChangeListener(() => {
     if (!page.publisher) return
 
     publisher = page.publisher
+    pattern = `https?://${publisher}`
+    if ((!synopsis.publishers[publisher]) && (getSetting(settings.EXCLUDE_BY_DEFAULT))) {
+      appActions.changeSiteSetting(pattern, 'ledgerPayments', false)
+    }
     synopsis.initPublisher(publisher)
     entry = synopsis.publishers[publisher]
     if ((page.protocol) && (!entry.protocol)) entry.protocol = page.protocol
